@@ -14,6 +14,8 @@ import havi2odoo as h2o
 
 st.set_page_config(page_title="HAVI → Odoo · Pedidos", page_icon="🥟",
                    layout="wide")
+st.logo("assets/KQR_SOLUTIONS-fondo_transparente_recortada.png",
+        size="large")
 
 st.title("🥟 HAVI → Odoo · Pedidos de venta")
 st.caption(

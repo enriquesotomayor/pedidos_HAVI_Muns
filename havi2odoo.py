@@ -309,7 +309,9 @@ def procesar(df: pd.DataFrame,
             pedido["lineas"].append({
                 "product_id": servicio,
                 "product_uom_qty": total_kg,
-                "product_uom_id": "",   # hereda la UdM del servicio (kg)
+                # "kg" explícito: el importador de Odoo NO hereda la UdM del
+                # servicio si la columna va mapeada con la celda vacía
+                "product_uom_id": "kg",
                 "desc_havi": f"— transporte ({total_kg} kg)",
                 "spnr": "",
             })

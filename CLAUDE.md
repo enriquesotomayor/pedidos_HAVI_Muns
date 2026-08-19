@@ -37,8 +37,9 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
   caja ⇒ factor 3 (1 caja HAVI = 3 × Bolsa 2kg).
 - Línea de transporte por pedido: Σ Kg Entregados × servicio según mapeo de
   transporte del debtor (`NO APLICA` = sin línea). La app pone servicio y kg;
-  el precio/kg vive en Odoo. UdM de esa línea en blanco (hereda kg del
-  servicio).
+  el precio/kg vive en Odoo. UdM de esa línea = "kg" EXPLÍCITO: el
+  importador de Odoo no hereda la UdM del servicio si la columna va mapeada
+  con la celda vacía (llegaba sin UdM y con precio 0).
 - El xlsx de salida usa nombres técnicos de campo de `sale.order`
   (`partner_id`, `client_order_ref`, `origin`, `date_order`,
   `order_line/product_id`, `order_line/product_uom_qty`,

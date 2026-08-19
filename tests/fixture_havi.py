@@ -17,7 +17,7 @@ casos, añadirlos al final y ajustar los conteos en test_havi2odoo.py):
 - SALSA CHIMICHURRI (factor 3, UdM "Bolsa 2kg"): 4 cajas HAVI -> 12 bolsas;
   sus 6.5 Kg Entregados siguen sumando a la línea de transporte.
 - AREAS, SAU tiene transporte NO APLICA (sin línea); Cantalar/Muns Vallès
-  llevan línea de transporte con la suma de kg y UdM en blanco.
+  llevan línea de transporte con la suma de kg y UdM "kg" explícita.
 - Fila de totales al final (sin fecha ni artículo) -> se ignora.
 """
 import io

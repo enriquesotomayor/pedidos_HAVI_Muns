@@ -140,13 +140,13 @@ def test_factor_default_1_no_altera_cantidades(resultado):
     assert atun["product_uom_qty"] == 2.0
 
 
-def test_linea_transporte_suma_kg_y_udm_en_blanco(resultado):
+def test_linea_transporte_suma_kg_y_udm_kg(resultado):
     p = _pedido(resultado, "5001")
     transporte = p["lineas"][-1]
     assert transporte["product_id"] == "Transporte Península"
     # Σ Kg Entregados, ajeno al factor: los 6.5 kg de la salsa siguen sumando
     assert transporte["product_uom_qty"] == 20.0  # 10 + 6.5 + 3.5
-    assert transporte["product_uom_id"] == ""
+    assert transporte["product_uom_id"] == "kg"  # explícito: el import no hereda
     assert p["total_kg"] == 20.0
 
 

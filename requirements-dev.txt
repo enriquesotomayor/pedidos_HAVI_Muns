@@ -1,0 +1,4 @@
+# Dependencias solo de desarrollo (NO añadir a requirements.txt:
+# Streamlit Cloud no debe instalarlas)
+-r requirements.txt
+pytest

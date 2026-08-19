@@ -33,7 +33,9 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
 
 - `app.py` — interfaz Streamlit
 - `havi2odoo.py` — lógica pura (parseo, agrupación, export), testeable sin UI
-- `requirements.txt`
+- `tests/` — suite pytest sobre datos sintéticos (sin ficheros reales de HAVI)
+- `requirements.txt` — dependencias de la app (las que instala Streamlit Cloud)
+- `requirements-dev.txt` — dependencias solo de desarrollo (pytest)
 
 ## Ejecutar en local
 
@@ -41,6 +43,22 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## Tests
+
+Los tests no usan ficheros reales de HAVI (datos de cliente): trabajan
+sobre un DataFrame sintético generado en memoria (`tests/fixture_havi.py`)
+que cubre los casos límite (bloques no contiguos, líneas a 0, pedidos
+`SIN Nº PEDIDO`, exclusión de PLACERES MUNS, salsa en kg, transporte,
+fila de totales…). Para lanzarlos, desde la raíz del repo:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+`pytest` va solo en `requirements-dev.txt` a propósito: Streamlit Cloud
+instala `requirements.txt` y no debe cargar dependencias de test.
 
 ## Publicar en Streamlit Community Cloud
 

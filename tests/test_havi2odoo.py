@@ -56,7 +56,8 @@ def test_bloques_no_contiguos_un_solo_pedido(resultado):
     # 5001 viene en dos bloques separados por 5002: debe salir UN pedido
     p = _pedido(resultado, "5001")
     productos = [ln["product_id"] for ln in p["lineas"]]
-    assert productos == ["Empanada Atún", "Salsa Chimichurri", "Alfajores",
+    # referencias internas (Atún, Salsa Chimichurri, Alfajor) + transporte
+    assert productos == ["PA00025", "PA00043", "ME00043",
                          "Transporte Península"]
     assert p["partner_id"] == "GRUPO CANTALAR, S.L"
     assert p["client_order_ref"] == "9001 - Tienda Cantalar Centro"
@@ -66,7 +67,7 @@ def test_bloques_no_contiguos_un_solo_pedido(resultado):
 
 def test_linea_qty_cero_descartada(resultado):
     p = _pedido(resultado, "5001")
-    assert "Empanada Pollo Asado" not in [ln["product_id"] for ln in p["lineas"]]
+    assert "PA00034" not in [ln["product_id"] for ln in p["lineas"]]  # Pollo Asado
     # informativo: la línea a 0 de 5001 y la de 5003
     assert len(resultado.incidencias.qty_cero) == 2
 
@@ -84,8 +85,9 @@ def test_sin_pedido_agrupado_por_nota(resultado):
     assert len(por_nota) == 1
     p = por_nota[0]
     assert p["partner_id"] == "MUNS VALLES, S.L."
+    # referencias internas (Atún, Ternera suave) + transporte
     assert [ln["product_id"] for ln in p["lineas"]] == [
-        "Empanada Atún", "Empanada Ternera suave", "Transporte Barcelona"]
+        "PA00025", "PA00009", "Transporte Barcelona"]
     assert p["revisar"] is True
 
 
@@ -125,7 +127,7 @@ def test_sin_incidencias_de_mapeo(resultado):
 
 def test_salsa_chimichurri_cantidad_en_kg(resultado):
     p = _pedido(resultado, "5001")
-    salsa = [ln for ln in p["lineas"] if ln["product_id"] == "Salsa Chimichurri"][0]
+    salsa = [ln for ln in p["lineas"] if ln["product_id"] == "PA00043"][0]
     # Kg Entregados (6.5), NO Cantidad Entregada (4 cajas)
     assert salsa["product_uom_qty"] == 6.5
     assert salsa["product_uom_id"] == "kg"
@@ -142,7 +144,7 @@ def test_linea_transporte_suma_kg_y_udm_en_blanco(resultado):
 
 def test_transporte_no_aplica_sin_linea(resultado):
     p = _pedido(resultado, "5002")  # AREAS, SAU -> NO APLICA
-    assert [ln["product_id"] for ln in p["lineas"]] == ["Empanada Jamón y queso"]
+    assert [ln["product_id"] for ln in p["lineas"]] == ["PA00001"]  # Jamón y queso
     assert not any("Transporte" in ln["product_id"] for ln in p["lineas"])
 
 
@@ -195,7 +197,7 @@ def test_roundtrip_config_xlsx():
 
 def test_config_sin_hoja_transporte_usa_defaults():
     productos = pd.DataFrame(
-        [("EMPANADA ATÚN", "Empanada Atún", "Caja 40 Uds")],
+        [("EMPANADA ATÚN", "PA00025", "Caja 40 Uds")],
         columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo"])
     clientes = pd.DataFrame(
         [("AREAS, SAU", "AREAS, SAU")],
@@ -206,6 +208,6 @@ def test_config_sin_hoja_transporte_usa_defaults():
         clientes.to_excel(writer, index=False, sheet_name="Clientes")
     buf.seek(0)
     pmap, dmap, tmap = config_xlsx_a_mapeos(buf)
-    assert pmap == {"EMPANADA ATÚN": ("Empanada Atún", "Caja 40 Uds")}
+    assert pmap == {"EMPANADA ATÚN": ("PA00025", "Caja 40 Uds")}
     assert dmap == {"AREAS, SAU": "AREAS, SAU"}
     assert tmap == DEFAULT_TRANSPORT_MAP  # sin hoja Transporte -> embebidos

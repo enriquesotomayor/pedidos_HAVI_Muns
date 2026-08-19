@@ -46,8 +46,10 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
 
 ## Datos verificados contra producción lasmuns (18/08/2026)
 
-- Nombres de producto y UdM de `DEFAULT_PRODUCT_MAP` verificados por MCP
-  (p. ej. "Alfajores" no "ALFAJOR", "Caja 4 Muns" no "CAJA 4 MUNS").
+- `DEFAULT_PRODUCT_MAP` casa producto por REFERENCIA INTERNA
+  (`default_code`, p. ej. `PA00025` = Empanada Atún), no traducible:
+  inmune a las traducciones de nombre y al idioma del usuario que importa.
+  Las UdM sí van por nombre en español (p. ej. "Caja 40 Uds", "Pack 200").
 - Nombres de cliente de `DEFAULT_DEBTOR_MAP` verificados (p. ej. HAVI
   escribe "Grupo Cantalar S.L." y en Odoo es "GRUPO CANTALAR, S.L").
   El lookup normaliza puntos/comas/mayúsculas del lado HAVI.
@@ -71,4 +73,5 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
   siendo un transformador puro de ficheros.
 - Decisión pendiente (Enrique/cliente): confirmar que el precio de tarifa
   de la salsa es por kg; discrepancia conocida Separador Caja 4 (tabla
-  cliente Pack 100 vs producto Odoo pack 200 — decisión: se factura Pack 100).
+  cliente Pack 100 vs producto Odoo Pack 200 — 19/08/2026: el mapeo usa
+  "Pack 200", el nombre español real de la UdM del producto en Odoo).

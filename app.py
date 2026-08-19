@@ -100,11 +100,11 @@ with st.expander("🗺️ Mapeo de productos (HAVI → Odoo + UdM)"):
         if str(r["Desc Artículo HAVI"]).strip() not in ("", "None", "nan")
     }
     st.caption(
-        "El **Producto Odoo** debe identificar UNÍVOCAMENTE el producto en "
-        "Odoo (nombre exacto o referencia interna). Ojo con las empanadas "
-        "con variantes de Mercado: el nombre de plantilla coincide con las "
-        "4 variantes y el import lo rechaza — usar la referencia de la "
-        "variante cuando estén cargadas (p. ej. `PA00001-ESP`)."
+        "El **Producto Odoo** lleva la referencia interna del producto "
+        "(`default_code`, no traducible: inmune al idioma del usuario que "
+        "importa); también admite el nombre exacto en español. Si algún día "
+        "se despliegan variantes de Mercado, usar la referencia de la "
+        "variante (p. ej. `PA00001-ESP`)."
     )
 
 with st.expander("👥 Mapeo de clientes (Debtor HAVI → Cliente Odoo)"):

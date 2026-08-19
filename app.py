@@ -87,15 +87,20 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 # Editores de mapeos
 # ---------------------------------------------------------------------------
-with st.expander("🗺️ Mapeo de productos (HAVI → Odoo + UdM)"):
+with st.expander("🗺️ Mapeo de productos (HAVI → Odoo + UdM + factor)"):
     dfp = pd.DataFrame(
-        [(k, v[0], v[1]) for k, v in sorted(st.session_state.product_map.items())],
-        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo"])
-    dfp_edit = st.data_editor(dfp, num_rows="dynamic", width="stretch",
-                              key="edit_prod")
+        [(k, v[0], v[1], v[2])
+         for k, v in sorted(st.session_state.product_map.items())],
+        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo", "Factor"])
+    dfp_edit = st.data_editor(
+        dfp, num_rows="dynamic", width="stretch", key="edit_prod",
+        column_config={"Factor": st.column_config.NumberColumn(
+            "Factor", default=1,
+            help="Cantidad Odoo = Cantidad Entregada HAVI × Factor")})
     st.session_state.product_map = {
         str(r["Desc Artículo HAVI"]).strip().upper():
-            (str(r["Producto Odoo"]).strip(), str(r["UdM Odoo"]).strip())
+            (str(r["Producto Odoo"]).strip(), str(r["UdM Odoo"]).strip(),
+             h2o.parse_factor(r["Factor"]))
         for _, r in dfp_edit.iterrows()
         if str(r["Desc Artículo HAVI"]).strip() not in ("", "None", "nan")
     }
@@ -104,7 +109,9 @@ with st.expander("🗺️ Mapeo de productos (HAVI → Odoo + UdM)"):
         "(`default_code`, no traducible: inmune al idioma del usuario que "
         "importa); también admite el nombre exacto en español. Si algún día "
         "se despliegan variantes de Mercado, usar la referencia de la "
-        "variante (p. ej. `PA00001-ESP`)."
+        "variante (p. ej. `PA00001-ESP`). El **Factor** multiplica la "
+        "Cantidad Entregada de HAVI (vacío = 1; p. ej. Salsa Chimichurri: "
+        "3 bolsas de 2 kg por caja HAVI)."
     )
 
 with st.expander("👥 Mapeo de clientes (Debtor HAVI → Cliente Odoo)"):

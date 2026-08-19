@@ -13,9 +13,9 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
 | Nota de Entrega − Cliente | Referencia de cliente (`client_order_ref`) → pasa a Referencia de la factura |
 | Nº Pedido | Documento origen (`origin`) |
 | Debtor | Cliente (`partner_id`, vía mapeo, verificado contra producción) |
-| Desc Artículo | Producto de línea (vía mapeo) |
-| Cantidad Entregada | Cantidad de línea |
-| (tabla Embalaje) | UdM de línea (`Caja 40 Uds`, `Pack 100`…) |
+| Desc Artículo | Producto de línea (vía mapeo, por referencia interna) |
+| Cantidad Entregada × factor | Cantidad de línea (factor por producto en el mapeo, default 1; Salsa Chimichurri: 3 bolsas de 2 kg por caja HAVI) |
+| (tabla Embalaje) | UdM de línea (`Caja 40 Uds`, `Pack 100`, `Bolsa 2kg`…) |
 | Σ Kg Entregados del pedido | Línea de servicio de transporte (qty en kg; precio/kg lo pone Odoo) |
 
 - Agrupación por valor de **Nº Pedido** (mismo pedido = mismo sale.order,
@@ -49,8 +49,8 @@ streamlit run app.py
 Los tests no usan ficheros reales de HAVI (datos de cliente): trabajan
 sobre un DataFrame sintético generado en memoria (`tests/fixture_havi.py`)
 que cubre los casos límite (bloques no contiguos, líneas a 0, pedidos
-`SIN Nº PEDIDO`, exclusión de PLACERES MUNS, salsa en kg, transporte,
-fila de totales…). Para lanzarlos, desde la raíz del repo:
+`SIN Nº PEDIDO`, exclusión de PLACERES MUNS, salsa con factor 3,
+transporte, fila de totales…). Para lanzarlos, desde la raíz del repo:
 
 ```bash
 pip install -r requirements-dev.txt
@@ -71,8 +71,11 @@ instala `requirements.txt` y no debe cargar dependencias de test.
 Mapeos editables en la propia app (productos, clientes, transporte) y
 exportables/importables como un único xlsx con hojas `Productos`,
 `Clientes` y `Transporte` (compatible con `Embalaje_HAVI_odoo.xlsx`; si
-falta la hoja Transporte se usan los valores embebidos). Para fijar
-cambios permanentes, editar los `DEFAULT_*` en `havi2odoo.py`.
+falta la hoja Transporte se usan los valores embebidos). La hoja
+`Productos` admite una columna opcional `Factor` (multiplicador de la
+cantidad; si falta o está vacía, 1 — las configs antiguas de 3 columnas
+siguen funcionando). Para fijar cambios permanentes, editar los
+`DEFAULT_*` en `havi2odoo.py`.
 
 ## Importación en Odoo
 
@@ -84,8 +87,8 @@ Crear factura. Requisitos:
   producto. Las empanadas con variantes de Mercado dan "varias
   coincidencias" si se usa el nombre de plantilla → usar la referencia de
   variante (p. ej. `PA00001-ESP`) cuando estén cargadas.
-- UdM `Caja 40 Uds`, `Pack 100`, `Pack 1000`, `Caja de 27` en Unidades y
-  embalajes.
+- UdM `Caja 40 Uds`, `Pack 100`, `Pack 200`, `Pack 1000`, `Caja de 27` y
+  `Bolsa 2kg` en Unidades y embalajes.
 - Servicios de transporte (`Transporte Península`, `Transporte Barcelona`,
   `Transporte Portugal, Andorra e Islas`) dados de alta con UdM kg y
   precio por kg.

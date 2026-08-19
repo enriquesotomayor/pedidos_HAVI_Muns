@@ -39,39 +39,42 @@ NO_APLICA = "NO APLICA"
 # Mapeos por defecto (editables en la UI / sobreescribibles por config xlsx)
 # ---------------------------------------------------------------------------
 
-# HAVI (Desc Artículo, en MAYÚSCULAS normalizadas) -> (producto Odoo, UdM Odoo)
+# HAVI (Desc Artículo, en MAYÚSCULAS normalizadas)
+#   -> (producto Odoo, UdM Odoo, factor)
 # Producto Odoo = REFERENCIA INTERNA (default_code), no traducible: blinda el
 # import frente al idioma del usuario. Las UdM van por nombre en español.
-DEFAULT_PRODUCT_MAP: dict[str, tuple[str, str]] = {
-    "EMPANADA ATÚN": ("PA00025", "Caja 40 Uds"),
-    "EMPANADA CEBOLLA CARAMELIZADA": ("PA00003", "Caja 40 Uds"),
-    "EMPANADA CHEESEBURGUER": ("PA00030", "Caja 40 Uds"),
-    "EMPANADA CHOCO PLÁTANO": ("PA00016", "Caja 40 Uds"),
-    "EMPANADA ESPINACA Y EMMENTAL": ("PA00004", "Caja 40 Uds"),
-    "EMPANADA JAMÓN Y QUESO": ("PA00001", "Caja 40 Uds"),
-    "EMPANADA MANZANA Y CANELA": ("PA00012", "Caja 40 Uds"),
-    "EMPANADA MOZZARELLA Y OLIVADA": ("PA00005", "Caja 40 Uds"),
-    "EMPANADA POLLO AL CURRY": ("PA00008", "Caja 40 Uds"),
-    "EMPANADA POLLO ASADO": ("PA00034", "Caja 40 Uds"),
-    "EMPANADA POLLO THAI": ("PA00010", "Caja 40 Uds"),
-    "EMPANADA PROVOLONE Y TOMATE": ("PA00006", "Caja 40 Uds"),
-    "EMPANADA PULLED PORK XXL": ("PA00042", "Caja 40 Uds"),
-    "EMPANADA SETAS Y CAMEMBERT": ("PA00015", "Caja 40 Uds"),
-    "EMPANADA TERNERA PICANTE": ("PA00011", "Caja 40 Uds"),
-    "EMPANADA TERNERA ROYALE": ("PA00035", "Caja 40 Uds"),
-    "EMPANADA TERNERA SUAVE": ("PA00009", "Caja 40 Uds"),
-    "EMPANADA TOMATE Y ALBAHACA": ("PA00002", "Caja 40 Uds"),
-    "EMPANADA TÜNA": ("PA00039", "Caja 40 Uds"),
-    "SALSA CHIMICHURRI": ("PA00043", "kg"),
-    "ALFAJOR": ("ME00043", "Caja de 27"),
-    "CAJA 4 MUNS": ("MP00122", "Pack 100"),
-    "CAJA 8 MUNS": ("MP00123", "Pack 100"),
-    "CAJA 12 MUNS": ("MP00121", "Pack 100"),
-    "SEPARADOR CAJA 4": ("MP00128", "Pack 200"),
-    "SEPARADOR CAJA 8": ("MP00129", "Pack 100"),
-    "SEPARADOR CAJA 12": ("MP00127", "Pack 100"),
-    "PAPEL ANTIADHERENTE GRANDE": ("MP00124", "Pack 1000"),
-    "PAPEL ANTIADHERENTE MEDIANO": ("MP00125", "Pack 1000"),
+# Factor: cantidad Odoo = Cantidad Entregada HAVI × factor. Hoy solo la salsa
+# usa factor ≠ 1 (HAVI mete 3 bolsas de 2 kg por caja).
+DEFAULT_PRODUCT_MAP: dict[str, tuple[str, str, int | float]] = {
+    "EMPANADA ATÚN": ("PA00025", "Caja 40 Uds", 1),
+    "EMPANADA CEBOLLA CARAMELIZADA": ("PA00003", "Caja 40 Uds", 1),
+    "EMPANADA CHEESEBURGUER": ("PA00030", "Caja 40 Uds", 1),
+    "EMPANADA CHOCO PLÁTANO": ("PA00016", "Caja 40 Uds", 1),
+    "EMPANADA ESPINACA Y EMMENTAL": ("PA00004", "Caja 40 Uds", 1),
+    "EMPANADA JAMÓN Y QUESO": ("PA00001", "Caja 40 Uds", 1),
+    "EMPANADA MANZANA Y CANELA": ("PA00012", "Caja 40 Uds", 1),
+    "EMPANADA MOZZARELLA Y OLIVADA": ("PA00005", "Caja 40 Uds", 1),
+    "EMPANADA POLLO AL CURRY": ("PA00008", "Caja 40 Uds", 1),
+    "EMPANADA POLLO ASADO": ("PA00034", "Caja 40 Uds", 1),
+    "EMPANADA POLLO THAI": ("PA00010", "Caja 40 Uds", 1),
+    "EMPANADA PROVOLONE Y TOMATE": ("PA00006", "Caja 40 Uds", 1),
+    "EMPANADA PULLED PORK XXL": ("PA00042", "Caja 40 Uds", 1),
+    "EMPANADA SETAS Y CAMEMBERT": ("PA00015", "Caja 40 Uds", 1),
+    "EMPANADA TERNERA PICANTE": ("PA00011", "Caja 40 Uds", 1),
+    "EMPANADA TERNERA ROYALE": ("PA00035", "Caja 40 Uds", 1),
+    "EMPANADA TERNERA SUAVE": ("PA00009", "Caja 40 Uds", 1),
+    "EMPANADA TOMATE Y ALBAHACA": ("PA00002", "Caja 40 Uds", 1),
+    "EMPANADA TÜNA": ("PA00039", "Caja 40 Uds", 1),
+    "SALSA CHIMICHURRI": ("PA00043", "Bolsa 2kg", 3),
+    "ALFAJOR": ("ME00043", "Caja de 27", 1),
+    "CAJA 4 MUNS": ("MP00122", "Pack 100", 1),
+    "CAJA 8 MUNS": ("MP00123", "Pack 100", 1),
+    "CAJA 12 MUNS": ("MP00121", "Pack 100", 1),
+    "SEPARADOR CAJA 4": ("MP00128", "Pack 200", 1),
+    "SEPARADOR CAJA 8": ("MP00129", "Pack 100", 1),
+    "SEPARADOR CAJA 12": ("MP00127", "Pack 100", 1),
+    "PAPEL ANTIADHERENTE GRANDE": ("MP00124", "Pack 1000", 1),
+    "PAPEL ANTIADHERENTE MEDIANO": ("MP00125", "Pack 1000", 1),
 }
 
 # Debtor HAVI -> nombre exacto del cliente en Odoo (res.partner).
@@ -127,6 +130,18 @@ def _norm(s: str) -> str:
     'Grupo Cantalar S.L.' y 'GRUPO CANTALAR, S.L' -> misma clave."""
     s = re.sub(r"[.,]", "", str(s).upper())
     return re.sub(r"\s+", " ", s).strip()
+
+
+def parse_factor(v) -> int | float:
+    """Factor multiplicador de cantidad. Celda vacía, ausente o no numérica
+    (y valores <= 0, que dejarían las líneas a cero) -> 1. Admite coma decimal."""
+    try:
+        f = float(str(v).strip().replace(",", "."))
+    except (TypeError, ValueError):
+        return 1
+    if pd.isna(f) or f <= 0:
+        return 1
+    return int(f) if f.is_integer() else f
 
 
 # ---------------------------------------------------------------------------
@@ -268,16 +283,13 @@ def procesar(df: pd.DataFrame,
             desc = str(ln[COL_DESC]).strip()
             clave = desc.upper()
             if clave in product_map:
-                nombre_odoo, udm = product_map[clave]
+                nombre_odoo, udm, factor = product_map[clave]
             else:
                 prod_sin_mapeo.add(desc)
-                nombre_odoo, udm = desc, ""
-            # Productos vendidos a peso (UdM kg): la cantidad facturable es
-            # la columna Kg Entregados, no la Cantidad Entregada (cajas)
-            if udm.strip().lower() == "kg" and float(ln[COL_KG]) > 0:
-                cantidad = round(float(ln[COL_KG]), 2)
-            else:
-                cantidad = float(ln[COL_QTY])
+                nombre_odoo, udm, factor = desc, "", 1
+            # cantidad Odoo = Cantidad Entregada HAVI × factor del mapeo
+            # (p. ej. salsa: 1 caja HAVI = 3 × Bolsa 2kg)
+            cantidad = round(float(ln[COL_QTY]) * factor, 2)
             pedido["lineas"].append({
                 "product_id": nombre_odoo,
                 "product_uom_qty": cantidad,
@@ -342,8 +354,8 @@ def mapeos_a_config_xlsx(product_map: dict, debtor_map: dict,
     """Exporta los mapeos actuales a un xlsx de configuración reutilizable."""
     buf = io.BytesIO()
     dfp = pd.DataFrame(
-        [(k, v[0], v[1]) for k, v in product_map.items()],
-        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo"])
+        [(k, v[0], v[1], v[2]) for k, v in product_map.items()],
+        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo", "Factor"])
     dfd = pd.DataFrame(list(debtor_map.items()),
                        columns=["Debtor HAVI", "Cliente Odoo"])
     dft = pd.DataFrame(list(transport_map.items()),
@@ -357,13 +369,17 @@ def mapeos_a_config_xlsx(product_map: dict, debtor_map: dict,
 
 def config_xlsx_a_mapeos(archivo) -> tuple[dict, dict, dict]:
     """Lee un xlsx de configuración (hojas Productos, Clientes y,
-    opcionalmente, Transporte). Compatible con Embalaje_HAVI_odoo.xlsx."""
+    opcionalmente, Transporte). Compatible con Embalaje_HAVI_odoo.xlsx.
+    La columna Factor de Productos es opcional (configs antiguas de
+    3 columnas): si falta, o la celda está vacía/no numérica, factor = 1."""
     xl = pd.ExcelFile(archivo)
     dfp = xl.parse("Productos").fillna("")
     dfd = xl.parse("Clientes").fillna("")
+    con_factor = "Factor" in dfp.columns
     product_map = {
         str(r["Desc Artículo HAVI"]).strip().upper():
-            (str(r["Producto Odoo"]).strip(), str(r["UdM Odoo"]).strip())
+            (str(r["Producto Odoo"]).strip(), str(r["UdM Odoo"]).strip(),
+             parse_factor(r["Factor"]) if con_factor else 1)
         for _, r in dfp.iterrows() if str(r["Desc Artículo HAVI"]).strip()
     }
     debtor_map = {

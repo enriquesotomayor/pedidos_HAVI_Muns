@@ -14,7 +14,8 @@ casos, añadirlos al final y ajustar los conteos en test_havi2odoo.py):
 - Línea de PLACERES MUNS SL -> excluida siempre.
 - Debtor "GRUPO CANTALAR, S.L." (grafía distinta de la clave del mapeo
   "Grupo Cantalar S.L.") -> debe resolver a "GRUPO CANTALAR, S.L".
-- SALSA CHIMICHURRI (UdM kg): cantidad = Kg Entregados (6.5), no cajas (4).
+- SALSA CHIMICHURRI (factor 3, UdM "Bolsa 2kg"): 4 cajas HAVI -> 12 bolsas;
+  sus 6.5 Kg Entregados siguen sumando a la línea de transporte.
 - AREAS, SAU tiene transporte NO APLICA (sin línea); Cantalar/Muns Vallès
   llevan línea de transporte con la suma de kg y UdM en blanco.
 - Fila de totales al final (sin fecha ni artículo) -> se ignora.

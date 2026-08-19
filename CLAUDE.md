@@ -31,8 +31,10 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
 - `PLACERES MUNS SL` SIEMPRE excluido (no se autofactura). Amigos de Muns
   es cliente normal.
 - Referencia de cliente = `Nota de Entrega - Cliente` (tienda).
-- Productos con UdM mapeada `kg` (hoy: Salsa Chimichurri): la cantidad sale
-  de la columna **Kg Entregados**, no de Cantidad Entregada (que va en cajas).
+- Cada producto del mapeo lleva un FACTOR multiplicador: cantidad Odoo =
+  Cantidad Entregada HAVI × factor (default 1). Hoy solo Salsa Chimichurri
+  usa factor ≠ 1: se vende en UdM "Bolsa 2kg" y HAVI mete 3 bolsas por
+  caja ⇒ factor 3 (1 caja HAVI = 3 × Bolsa 2kg).
 - Línea de transporte por pedido: Σ Kg Entregados × servicio según mapeo de
   transporte del debtor (`NO APLICA` = sin línea). La app pone servicio y kg;
   el precio/kg vive en Odoo. UdM de esa línea en blanco (hereda kg del
@@ -65,13 +67,15 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
 
 - Cambios de formato de la config xlsx (hojas `Productos`, `Clientes`,
   `Transporte`) rompen ficheros guardados por los usuarios: mantener
-  retrocompatibilidad (la hoja Transporte es opcional).
+  retrocompatibilidad (la hoja Transporte y la columna Factor de Productos
+  son opcionales).
 - Probar SIEMPRE contra un fichero real de HAVI antes de pushear; validar
-  nº de pedidos, los `SIN Nº PEDIDO`, la línea de salsa en kg y los kg de
-  transporte.
+  nº de pedidos, los `SIN Nº PEDIDO`, la línea de salsa en bolsas
+  (cajas × 3) y los kg de transporte.
 - No añadir dependencias pesadas ni llamadas de red: la app debe seguir
   siendo un transformador puro de ficheros.
 - Decisión pendiente (Enrique/cliente): confirmar que el precio de tarifa
-  de la salsa es por kg; discrepancia conocida Separador Caja 4 (tabla
+  de la salsa casa con la UdM "Bolsa 2kg" (19/08/2026: la salsa deja de ir
+  en kg y pasa a factor 3); discrepancia conocida Separador Caja 4 (tabla
   cliente Pack 100 vs producto Odoo Pack 200 — 19/08/2026: el mapeo usa
   "Pack 200", el nombre español real de la UdM del producto en Odoo).

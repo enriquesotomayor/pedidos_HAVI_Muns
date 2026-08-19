@@ -125,18 +125,26 @@ def test_sin_incidencias_de_mapeo(resultado):
 # procesar: cantidades y transporte
 # ---------------------------------------------------------------------------
 
-def test_salsa_chimichurri_cantidad_en_kg(resultado):
+def test_salsa_chimichurri_factor_bolsas(resultado):
     p = _pedido(resultado, "5001")
     salsa = [ln for ln in p["lineas"] if ln["product_id"] == "PA00043"][0]
-    # Kg Entregados (6.5), NO Cantidad Entregada (4 cajas)
-    assert salsa["product_uom_qty"] == 6.5
-    assert salsa["product_uom_id"] == "kg"
+    # 4 cajas HAVI × factor 3 = 12 bolsas de 2 kg (NO los 6.5 Kg Entregados)
+    assert salsa["product_uom_qty"] == 12.0
+    assert salsa["product_uom_id"] == "Bolsa 2kg"
+
+
+def test_factor_default_1_no_altera_cantidades(resultado):
+    p = _pedido(resultado, "5001")
+    atun = [ln for ln in p["lineas"] if ln["product_id"] == "PA00025"][0]
+    # empanadas con factor 1: cantidad = Cantidad Entregada tal cual
+    assert atun["product_uom_qty"] == 2.0
 
 
 def test_linea_transporte_suma_kg_y_udm_en_blanco(resultado):
     p = _pedido(resultado, "5001")
     transporte = p["lineas"][-1]
     assert transporte["product_id"] == "Transporte Península"
+    # Σ Kg Entregados, ajeno al factor: los 6.5 kg de la salsa siguen sumando
     assert transporte["product_uom_qty"] == 20.0  # 10 + 6.5 + 3.5
     assert transporte["product_uom_id"] == ""
     assert p["total_kg"] == 20.0
@@ -179,7 +187,7 @@ def test_exportar_xlsx_legible(resultado):
     df = pd.read_excel(io.BytesIO(contenido))
     assert list(df.columns) == COLUMNAS_EXPORT
     assert len(df) == len(resultado.df_import)
-    assert (df["order_line/product_uom_qty"] == 6.5).any()  # la salsa en kg
+    assert (df["order_line/product_uom_qty"] == 12.0).any()  # la salsa en bolsas
 
 
 # ---------------------------------------------------------------------------
@@ -190,9 +198,58 @@ def test_roundtrip_config_xlsx():
     contenido = mapeos_a_config_xlsx(DEFAULT_PRODUCT_MAP, DEFAULT_DEBTOR_MAP,
                                      DEFAULT_TRANSPORT_MAP)
     pmap, dmap, tmap = config_xlsx_a_mapeos(io.BytesIO(contenido))
-    assert pmap == DEFAULT_PRODUCT_MAP
+    assert pmap == DEFAULT_PRODUCT_MAP  # incluye el factor (salsa: 3)
     assert dmap == DEFAULT_DEBTOR_MAP
     assert tmap == DEFAULT_TRANSPORT_MAP
+
+
+def test_config_xlsx_escribe_columna_factor():
+    contenido = mapeos_a_config_xlsx(DEFAULT_PRODUCT_MAP, DEFAULT_DEBTOR_MAP,
+                                     DEFAULT_TRANSPORT_MAP)
+    dfp = pd.read_excel(io.BytesIO(contenido), sheet_name="Productos")
+    assert "Factor" in dfp.columns
+    salsa = dfp[dfp["Producto Odoo"] == "PA00043"]
+    assert salsa["Factor"].tolist() == [3]
+    assert salsa["UdM Odoo"].tolist() == ["Bolsa 2kg"]
+
+
+def test_config_antigua_3_columnas_factor_1():
+    # configs guardadas antes de existir la columna Factor: siguen cargando
+    productos = pd.DataFrame(
+        [("EMPANADA ATÚN", "PA00025", "Caja 40 Uds"),
+         ("SALSA CHIMICHURRI", "PA00043", "Bolsa 2kg")],
+        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo"])
+    clientes = pd.DataFrame(
+        [("AREAS, SAU", "AREAS, SAU")],
+        columns=["Debtor HAVI", "Cliente Odoo"])
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+        productos.to_excel(writer, index=False, sheet_name="Productos")
+        clientes.to_excel(writer, index=False, sheet_name="Clientes")
+    buf.seek(0)
+    pmap, _, _ = config_xlsx_a_mapeos(buf)
+    assert pmap == {"EMPANADA ATÚN": ("PA00025", "Caja 40 Uds", 1),
+                    "SALSA CHIMICHURRI": ("PA00043", "Bolsa 2kg", 1)}
+
+
+def test_config_factor_vacio_o_no_numerico_es_1():
+    productos = pd.DataFrame(
+        [("EMPANADA ATÚN", "PA00025", "Caja 40 Uds", ""),
+         ("SALSA CHIMICHURRI", "PA00043", "Bolsa 2kg", "x3"),
+         ("ALFAJOR", "ME00043", "Caja de 27", 2)],
+        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo", "Factor"])
+    clientes = pd.DataFrame(
+        [("AREAS, SAU", "AREAS, SAU")],
+        columns=["Debtor HAVI", "Cliente Odoo"])
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+        productos.to_excel(writer, index=False, sheet_name="Productos")
+        clientes.to_excel(writer, index=False, sheet_name="Clientes")
+    buf.seek(0)
+    pmap, _, _ = config_xlsx_a_mapeos(buf)
+    assert pmap["EMPANADA ATÚN"][2] == 1     # celda vacía
+    assert pmap["SALSA CHIMICHURRI"][2] == 1  # no numérico
+    assert pmap["ALFAJOR"][2] == 2            # numérico se respeta
 
 
 def test_config_sin_hoja_transporte_usa_defaults():
@@ -208,6 +265,6 @@ def test_config_sin_hoja_transporte_usa_defaults():
         clientes.to_excel(writer, index=False, sheet_name="Clientes")
     buf.seek(0)
     pmap, dmap, tmap = config_xlsx_a_mapeos(buf)
-    assert pmap == {"EMPANADA ATÚN": ("PA00025", "Caja 40 Uds")}
+    assert pmap == {"EMPANADA ATÚN": ("PA00025", "Caja 40 Uds", 1)}
     assert dmap == {"AREAS, SAU": "AREAS, SAU"}
     assert tmap == DEFAULT_TRANSPORT_MAP  # sin hoja Transporte -> embebidos

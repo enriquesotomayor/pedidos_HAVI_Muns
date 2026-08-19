@@ -10,7 +10,7 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
 | Excel HAVI | Odoo (sale.order) |
 |---|---|
 | Fecha Entrega | Fecha del pedido (`date_order`) |
-| Nota de Entrega − Cliente | Referencia de cliente (`client_order_ref`) → pasa a Referencia de la factura |
+| Nota de Entrega − Cliente − Nº Pedido | Referencia de cliente (`client_order_ref`) → pasa a Referencia de la factura, con el nº de pedido HAVI incluido (los `SIN Nº PEDIDO` van sin sufijo) |
 | Nº Pedido | Documento origen (`origin`) |
 | Debtor | Cliente (`partner_id`, vía mapeo, verificado contra producción) |
 | Desc Artículo | Producto de línea (vía mapeo, por referencia interna) |

@@ -30,7 +30,10 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
 - Cantidad 0 ⇒ línea descartada; pedido sin líneas ⇒ no se genera.
 - `PLACERES MUNS SL` SIEMPRE excluido (no se autofactura). Amigos de Muns
   es cliente normal.
-- Referencia de cliente = `Nota de Entrega - Cliente` (tienda).
+- Referencia de cliente = `Nota de Entrega - Cliente - Nº Pedido HAVI`:
+  el nº de pedido viaja así hasta la factura (Odoo no propaga el `origin`
+  del pedido; en la factura pone el nombre del sale.order). Los pedidos
+  `SIN Nº PEDIDO` van sin sufijo: `Nota - Cliente` o solo `Cliente`.
 - Cada producto del mapeo lleva un FACTOR multiplicador: cantidad Odoo =
   Cantidad Entregada HAVI × factor (default 1). Hoy solo Salsa Chimichurri
   usa factor ≠ 1: se vende en UdM "Bolsa 2kg" y HAVI mete 3 bolsas por

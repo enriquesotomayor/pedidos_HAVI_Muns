@@ -43,8 +43,8 @@ with st.sidebar:
     st.markdown(
         "**Reglas fijas**\n"
         "- Fecha del pedido = *Fecha Entrega*\n"
-        "- Referencia de cliente = *Nota de Entrega* − *Cliente* "
-        "(pasa a la Referencia de la factura)\n"
+        "- Referencia de cliente = *Nota de Entrega* − *Cliente* − "
+        "*Nº Pedido* (pasa a la Referencia de la factura)\n"
         "- Documento origen = *Nº Pedido*\n"
         "- Mismo *Nº Pedido* ⇒ mismo pedido de venta\n"
         "- Líneas con cantidad 0 se descartan\n"

@@ -14,6 +14,8 @@ casos, añadirlos al final y ajustar los conteos en test_havi2odoo.py):
 - Línea de PLACERES MUNS SL -> excluida siempre.
 - Debtor "GRUPO CANTALAR, S.L." (grafía distinta de la clave del mapeo
   "Grupo Cantalar S.L.") -> debe resolver a "GRUPO CANTALAR, S.L".
+- Pedido 5005 con nº de pedido pero SIN Nota de Entrega -> referencia de
+  cliente "cliente - nºpedido" (sin nota delante).
 - SALSA CHIMICHURRI (factor 3, UdM "Bolsa 2kg"): 4 cajas HAVI -> 12 bolsas;
   sus 6.5 Kg Entregados siguen sumando a la línea de transporte.
 - AREAS, SAU tiene transporte NO APLICA (sin línea); Cantalar/Muns Vallès
@@ -62,6 +64,9 @@ def df_havi_sintetico() -> pd.DataFrame:
         # --- PLACERES MUNS SL: excluido siempre ---
         (FECHA, "Placeres Muns Obrador", "EMPANADA ATÚN", 5268589,
          "PLACERES MUNS SL", "B66666666", 9200, 5004, 5, 10.0),
+        # --- Pedido 5005 con nº de pedido pero SIN nota de entrega ---
+        (FECHA, "Muns DLG Tienda", "EMPANADA TÜNA", 5268596,
+         "MUNS DLG, S.L", "B33333333", None, 5005, 2, 4.0),
         # --- Fila de totales (sin fecha ni artículo): debe ignorarse ---
         (None, None, None, None, None, None, None, None, 999, 999.0),
     ]

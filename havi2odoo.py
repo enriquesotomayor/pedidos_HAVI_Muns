@@ -268,11 +268,16 @@ def procesar(df: pd.DataFrame,
             partner = debtor_havi  # fallback: nombre tal cual
 
         fecha = pd.to_datetime(cab[COL_FECHA])
+        # Referencia de cliente: "nota - cliente" y, si hay nº de pedido HAVI,
+        # con él como sufijo — el origin no se propaga del pedido a la factura
+        # (Odoo pone el nombre del sale.order), la referencia sí.
+        ref = (f"{_fmt_num(cab[COL_NOTA])} - {str(cab[COL_CLIENTE]).strip()}"
+               if pd.notna(cab[COL_NOTA]) else str(cab[COL_CLIENTE]).strip())
+        if not sin_num:
+            ref = f"{ref} - {num_pedido}"
         pedido = {
             "partner_id": partner,
-            "client_order_ref": (
-                f"{_fmt_num(cab[COL_NOTA])} - {str(cab[COL_CLIENTE]).strip()}"
-                if pd.notna(cab[COL_NOTA]) else str(cab[COL_CLIENTE]).strip()),
+            "client_order_ref": ref,
             "origin": num_pedido,
             "date_order": fecha.strftime("%Y-%m-%d"),
             "debtor_havi": debtor_havi,

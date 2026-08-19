@@ -38,8 +38,8 @@ def _pedido(resultado, origin):
 
 def test_fila_totales_ignorada():
     df = leer_havi(xlsx_havi_sintetico())
-    # 11 filas en la fixture, la de totales (sin fecha ni artículo) se elimina
-    assert len(df) == 10
+    # 12 filas en la fixture, la de totales (sin fecha ni artículo) se elimina
+    assert len(df) == 11
     assert not (df["Cantidad Entregada"] == 999).any()
 
 
@@ -49,7 +49,7 @@ def test_fila_totales_ignorada():
 
 def test_numero_y_orden_de_pedidos(resultado):
     assert [p["origin"] for p in resultado.pedidos] == [
-        "5001", "5002", "SIN Nº PEDIDO", "SIN Nº PEDIDO"]
+        "5001", "5002", "SIN Nº PEDIDO", "SIN Nº PEDIDO", "5005"]
 
 
 def test_bloques_no_contiguos_un_solo_pedido(resultado):
@@ -60,7 +60,8 @@ def test_bloques_no_contiguos_un_solo_pedido(resultado):
     assert productos == ["PA00025", "PA00043", "ME00043",
                          "Transporte Península"]
     assert p["partner_id"] == "GRUPO CANTALAR, S.L"
-    assert p["client_order_ref"] == "9001 - Tienda Cantalar Centro"
+    # nota - cliente - nº pedido HAVI (el nº viaja así hasta la factura)
+    assert p["client_order_ref"] == "9001 - Tienda Cantalar Centro - 5001"
     assert p["date_order"] == "2026-08-10"
     assert p["revisar"] is False
 
@@ -80,6 +81,7 @@ def test_pedido_todo_a_cero_no_se_genera(resultado):
 def test_sin_pedido_agrupado_por_nota(resultado):
     sin_num = [p for p in resultado.pedidos if p["origin"] == "SIN Nº PEDIDO"]
     assert len(sin_num) == 2
+    # sin nº de pedido HAVI: la referencia NO lleva sufijo
     por_nota = [p for p in sin_num
                 if p["client_order_ref"] == "9100 - Muns Valles Tienda"]
     assert len(por_nota) == 1
@@ -101,6 +103,16 @@ def test_sin_pedido_ni_nota_agrupado_por_fecha_tienda(resultado):
     assert p["revisar"] is True
     # las 3 líneas sin nº de pedido quedan reportadas como incidencia
     assert len(resultado.incidencias.sin_pedido) == 3
+
+
+def test_pedido_sin_nota_ref_cliente_y_numero(resultado):
+    # con nº de pedido HAVI pero sin nota: referencia = "cliente - nºpedido"
+    p = _pedido(resultado, "5005")
+    assert p["client_order_ref"] == "Muns DLG Tienda - 5005"
+    assert p["partner_id"] == "MUNS DLG, S.L"
+    assert p["revisar"] is False
+    assert [ln["product_id"] for ln in p["lineas"]] == [
+        "PA00039", "Transporte Barcelona"]  # Tüna + transporte (4.0 kg)
 
 
 def test_placeres_muns_siempre_excluido(resultado):
@@ -166,10 +178,10 @@ def test_columnas_exactas_del_export(resultado):
 
 def test_one2many_cabecera_solo_en_primera_linea(resultado):
     df = resultado.df_import
-    # 4 (5001) + 1 (5002) + 3 (nota 9100) + 2 (suelto) = 10 filas
-    assert len(df) == 10
+    # 4 (5001) + 1 (5002) + 3 (nota 9100) + 2 (suelto) + 2 (5005) = 12 filas
+    assert len(df) == 12
     con_cabecera = df.index[df["partner_id"] != ""].tolist()
-    assert con_cabecera == [0, 4, 5, 8]  # primera línea de cada pedido
+    assert con_cabecera == [0, 4, 5, 8, 10]  # primera línea de cada pedido
     cab = ["partner_id", "client_order_ref", "origin", "date_order"]
     for i in df.index:
         if i in con_cabecera:

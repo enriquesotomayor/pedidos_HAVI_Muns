@@ -43,28 +43,29 @@ NO_APLICA = "NO APLICA"
 #   -> (producto Odoo, UdM Odoo, factor)
 # Producto Odoo = REFERENCIA INTERNA (default_code), no traducible: blinda el
 # import frente al idioma del usuario. Las UdM van por nombre en español.
-# Factor: cantidad Odoo = Cantidad Entregada HAVI × factor. Hoy solo la salsa
-# usa factor ≠ 1 (HAVI mete 3 bolsas de 2 kg por caja).
+# Factor: cantidad Odoo = Cantidad Entregada HAVI × factor. Empanadas en
+# unidades sueltas (1 caja HAVI = 40 Unidades); salsa en bolsas (1 caja
+# HAVI = 3 bolsas de 2 kg).
 DEFAULT_PRODUCT_MAP: dict[str, tuple[str, str, int | float]] = {
-    "EMPANADA ATÚN": ("PA00025", "Caja 40 Uds", 1),
-    "EMPANADA CEBOLLA CARAMELIZADA": ("PA00003", "Caja 40 Uds", 1),
-    "EMPANADA CHEESEBURGUER": ("PA00030", "Caja 40 Uds", 1),
-    "EMPANADA CHOCO PLÁTANO": ("PA00016", "Caja 40 Uds", 1),
-    "EMPANADA ESPINACA Y EMMENTAL": ("PA00004", "Caja 40 Uds", 1),
-    "EMPANADA JAMÓN Y QUESO": ("PA00001", "Caja 40 Uds", 1),
-    "EMPANADA MANZANA Y CANELA": ("PA00012", "Caja 40 Uds", 1),
-    "EMPANADA MOZZARELLA Y OLIVADA": ("PA00005", "Caja 40 Uds", 1),
-    "EMPANADA POLLO AL CURRY": ("PA00008", "Caja 40 Uds", 1),
-    "EMPANADA POLLO ASADO": ("PA00034", "Caja 40 Uds", 1),
-    "EMPANADA POLLO THAI": ("PA00010", "Caja 40 Uds", 1),
-    "EMPANADA PROVOLONE Y TOMATE": ("PA00006", "Caja 40 Uds", 1),
-    "EMPANADA PULLED PORK XXL": ("PA00042", "Caja 40 Uds", 1),
-    "EMPANADA SETAS Y CAMEMBERT": ("PA00015", "Caja 40 Uds", 1),
-    "EMPANADA TERNERA PICANTE": ("PA00011", "Caja 40 Uds", 1),
-    "EMPANADA TERNERA ROYALE": ("PA00035", "Caja 40 Uds", 1),
-    "EMPANADA TERNERA SUAVE": ("PA00009", "Caja 40 Uds", 1),
-    "EMPANADA TOMATE Y ALBAHACA": ("PA00002", "Caja 40 Uds", 1),
-    "EMPANADA TÜNA": ("PA00039", "Caja 40 Uds", 1),
+    "EMPANADA ATÚN": ("PA00025", "Unidades", 40),
+    "EMPANADA CEBOLLA CARAMELIZADA": ("PA00003", "Unidades", 40),
+    "EMPANADA CHEESEBURGUER": ("PA00030", "Unidades", 40),
+    "EMPANADA CHOCO PLÁTANO": ("PA00016", "Unidades", 40),
+    "EMPANADA ESPINACA Y EMMENTAL": ("PA00004", "Unidades", 40),
+    "EMPANADA JAMÓN Y QUESO": ("PA00001", "Unidades", 40),
+    "EMPANADA MANZANA Y CANELA": ("PA00012", "Unidades", 40),
+    "EMPANADA MOZZARELLA Y OLIVADA": ("PA00005", "Unidades", 40),
+    "EMPANADA POLLO AL CURRY": ("PA00008", "Unidades", 40),
+    "EMPANADA POLLO ASADO": ("PA00034", "Unidades", 40),
+    "EMPANADA POLLO THAI": ("PA00010", "Unidades", 40),
+    "EMPANADA PROVOLONE Y TOMATE": ("PA00006", "Unidades", 40),
+    "EMPANADA PULLED PORK XXL": ("PA00042", "Unidades", 40),
+    "EMPANADA SETAS Y CAMEMBERT": ("PA00015", "Unidades", 40),
+    "EMPANADA TERNERA PICANTE": ("PA00011", "Unidades", 40),
+    "EMPANADA TERNERA ROYALE": ("PA00035", "Unidades", 40),
+    "EMPANADA TERNERA SUAVE": ("PA00009", "Unidades", 40),
+    "EMPANADA TOMATE Y ALBAHACA": ("PA00002", "Unidades", 40),
+    "EMPANADA TÜNA": ("PA00039", "Unidades", 40),
     "SALSA CHIMICHURRI": ("PA00043", "Bolsa 2kg", 3),
     "ALFAJOR": ("ME00043", "Caja de 27", 1),
     "CAJA 4 MUNS": ("MP00122", "Pack 100", 1),

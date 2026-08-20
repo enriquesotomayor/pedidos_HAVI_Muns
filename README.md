@@ -14,8 +14,8 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
 | Nº Pedido | Documento origen (`origin`) |
 | Debtor | Cliente (`partner_id`, vía mapeo, verificado contra producción) |
 | Desc Artículo | Producto de línea (vía mapeo, por referencia interna) |
-| Cantidad Entregada × factor | Cantidad de línea (factor por producto en el mapeo, default 1; Salsa Chimichurri: 3 bolsas de 2 kg por caja HAVI) |
-| (tabla Embalaje) | UdM de línea (`Caja 40 Uds`, `Pack 100`, `Bolsa 2kg`…) |
+| Cantidad Entregada × factor | Cantidad de línea (factor por producto en el mapeo, default 1; empanadas: 40 unidades por caja HAVI; Salsa Chimichurri: 3 bolsas de 2 kg por caja) |
+| (tabla Embalaje) | UdM de línea (`Unidades`, `Pack 100`, `Bolsa 2kg`…) |
 | Σ Kg Entregados del pedido | Línea de servicio de transporte (qty en kg; precio/kg lo pone Odoo) |
 
 - Agrupación por valor de **Nº Pedido** (mismo pedido = mismo sale.order,
@@ -87,7 +87,7 @@ Crear factura. Requisitos:
   producto. Las empanadas con variantes de Mercado dan "varias
   coincidencias" si se usa el nombre de plantilla → usar la referencia de
   variante (p. ej. `PA00001-ESP`) cuando estén cargadas.
-- UdM `Caja 40 Uds`, `Pack 100`, `Pack 200`, `Pack 1000`, `Caja de 27` y
+- UdM `Unidades`, `Pack 100`, `Pack 200`, `Pack 1000`, `Caja de 27` y
   `Bolsa 2kg` en Unidades y embalajes.
 - Servicios de transporte (`Transporte Península`, `Transporte Barcelona`,
   `Transporte Portugal, Andorra e Islas`) dados de alta con UdM kg y

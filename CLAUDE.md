@@ -35,9 +35,10 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
   del pedido; en la factura pone el nombre del sale.order). Los pedidos
   `SIN Nº PEDIDO` van sin sufijo: `Nota - Cliente` o solo `Cliente`.
 - Cada producto del mapeo lleva un FACTOR multiplicador: cantidad Odoo =
-  Cantidad Entregada HAVI × factor (default 1). Hoy solo Salsa Chimichurri
-  usa factor ≠ 1: se vende en UdM "Bolsa 2kg" y HAVI mete 3 bolsas por
-  caja ⇒ factor 3 (1 caja HAVI = 3 × Bolsa 2kg).
+  Cantidad Entregada HAVI × factor (default 1). Las empanadas se facturan
+  en UNIDADES sueltas: UdM "Unidades", factor 40 (1 caja HAVI = 40 uds; la
+  caja es solo el dato de HAVI). Salsa Chimichurri: UdM "Bolsa 2kg",
+  factor 3 (1 caja HAVI = 3 bolsas). Alfajor y embalaje siguen a factor 1.
 - Línea de transporte por pedido: Σ Kg Entregados × servicio según mapeo de
   transporte del debtor (`NO APLICA` = sin línea). La app pone servicio y kg;
   el precio/kg vive en Odoo. UdM de esa línea = "kg" EXPLÍCITO: el
@@ -55,7 +56,7 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
 - `DEFAULT_PRODUCT_MAP` casa producto por REFERENCIA INTERNA
   (`default_code`, p. ej. `PA00025` = Empanada Atún), no traducible:
   inmune a las traducciones de nombre y al idioma del usuario que importa.
-  Las UdM sí van por nombre en español (p. ej. "Caja 40 Uds", "Pack 200").
+  Las UdM sí van por nombre en español (p. ej. "Unidades", "Pack 200").
 - Nombres de cliente de `DEFAULT_DEBTOR_MAP` verificados (p. ej. HAVI
   escribe "Grupo Cantalar S.L." y en Odoo es "GRUPO CANTALAR, S.L").
   El lookup normaliza puntos/comas/mayúsculas del lado HAVI.
@@ -74,8 +75,9 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
   retrocompatibilidad (la hoja Transporte y la columna Factor de Productos
   son opcionales).
 - Probar SIEMPRE contra un fichero real de HAVI antes de pushear; validar
-  nº de pedidos, los `SIN Nº PEDIDO`, la línea de salsa en bolsas
-  (cajas × 3) y los kg de transporte.
+  nº de pedidos, los `SIN Nº PEDIDO`, las empanadas en unidades
+  (cajas × 40), la línea de salsa en bolsas (cajas × 3) y los kg de
+  transporte.
 - No añadir dependencias pesadas ni llamadas de red: la app debe seguir
   siendo un transformador puro de ficheros.
 - Decisión pendiente (Enrique/cliente): confirmar que el precio de tarifa

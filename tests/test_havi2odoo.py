@@ -145,11 +145,20 @@ def test_salsa_chimichurri_factor_bolsas(resultado):
     assert salsa["product_uom_id"] == "Bolsa 2kg"
 
 
-def test_factor_default_1_no_altera_cantidades(resultado):
+def test_empanadas_en_unidades_factor_40(resultado):
     p = _pedido(resultado, "5001")
     atun = [ln for ln in p["lineas"] if ln["product_id"] == "PA00025"][0]
-    # empanadas con factor 1: cantidad = Cantidad Entregada tal cual
-    assert atun["product_uom_qty"] == 2.0
+    # 2 cajas HAVI × factor 40 = 80 unidades sueltas
+    assert atun["product_uom_qty"] == 80.0
+    assert atun["product_uom_id"] == "Unidades"
+
+
+def test_factor_default_1_no_altera_cantidades(resultado):
+    p = _pedido(resultado, "5001")
+    alfajor = [ln for ln in p["lineas"] if ln["product_id"] == "ME00043"][0]
+    # alfajor sigue con factor 1: cantidad = Cantidad Entregada tal cual
+    assert alfajor["product_uom_qty"] == 1.0
+    assert alfajor["product_uom_id"] == "Caja de 27"
 
 
 def test_linea_transporte_suma_kg_y_udm_kg(resultado):

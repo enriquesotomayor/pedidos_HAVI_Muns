@@ -20,6 +20,8 @@ casos, añadirlos al final y ajustar los conteos en test_havi2odoo.py):
   sus 6.5 Kg Entregados siguen sumando a la línea de transporte.
 - AREAS, SAU tiene transporte NO APLICA (sin línea); Cantalar/Muns Vallès
   llevan línea de transporte con la suma de kg y UdM "kg" explícita.
+- SERVILLETAS 30X30 en 5002 (MP00130, "Pack 4800", factor 1): la cantidad
+  Odoo es la Cantidad Entregada tal cual.
 - Fila de totales al final (sin fecha ni artículo) -> se ignora.
 """
 import io
@@ -44,6 +46,8 @@ def df_havi_sintetico() -> pd.DataFrame:
         # --- Pedido 5002 intercalado (AREAS: transporte NO APLICA) ---
         (FECHA, "Areas T1 Aeropuerto", "EMPANADA JAMÓN Y QUESO", 5268591,
          "AREAS, SAU", "A22222222", 9002, 5002, 3, 9.0),
+        (FECHA, "Areas T1 Aeropuerto", "SERVILLETAS 30X30", 5268597,
+         "AREAS, SAU", "A22222222", 9002, 5002, 2, 5.0),
         # --- Pedido 5001, bloque 2 (no contiguo) ---
         (FECHA, "Tienda Cantalar Centro", "ALFAJOR", 5268592,
          "GRUPO CANTALAR, S.L.", "B11111111", 9001, 5001, 1, 3.5),

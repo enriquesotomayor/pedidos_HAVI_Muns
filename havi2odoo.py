@@ -76,6 +76,11 @@ DEFAULT_PRODUCT_MAP: dict[str, tuple[str, str, int | float]] = {
     "SEPARADOR CAJA 12": ("MP00127", "Pack 100", 1),
     "PAPEL ANTIADHERENTE GRANDE": ("MP00124", "Pack 1000", 1),
     "PAPEL ANTIADHERENTE MEDIANO": ("MP00125", "Pack 1000", 1),
+    "PAPEL ANTIADHERENTE PEQUEÑO": ("MP00126", "Pack 1000", 1),
+    "BOLSA PAPEL KRAFT": ("MP00120", "Pack 2000", 1),
+    "BOLSA PAPEL M": ("MP00119", "Pack 250", 1),
+    "BOLSA PAPEL GRANDE": ("MP00131", "Pack 250", 1),
+    "SERVILLETAS 30X30": ("MP00130", "Pack 4800", 1),
 }
 
 # Debtor HAVI -> nombre exacto del cliente en Odoo (res.partner).

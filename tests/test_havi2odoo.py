@@ -38,8 +38,8 @@ def _pedido(resultado, origin):
 
 def test_fila_totales_ignorada():
     df = leer_havi(xlsx_havi_sintetico())
-    # 12 filas en la fixture, la de totales (sin fecha ni artículo) se elimina
-    assert len(df) == 11
+    # 13 filas en la fixture, la de totales (sin fecha ni artículo) se elimina
+    assert len(df) == 12
     assert not (df["Cantidad Entregada"] == 999).any()
 
 
@@ -173,8 +173,17 @@ def test_linea_transporte_suma_kg_y_udm_kg(resultado):
 
 def test_transporte_no_aplica_sin_linea(resultado):
     p = _pedido(resultado, "5002")  # AREAS, SAU -> NO APLICA
-    assert [ln["product_id"] for ln in p["lineas"]] == ["PA00001"]  # Jamón y queso
+    # Jamón y queso + servilletas, sin línea de transporte
+    assert [ln["product_id"] for ln in p["lineas"]] == ["PA00001", "MP00130"]
     assert not any("Transporte" in ln["product_id"] for ln in p["lineas"])
+
+
+def test_servilletas_factor_1_pack_4800(resultado):
+    p = _pedido(resultado, "5002")
+    serv = [ln for ln in p["lineas"] if ln["product_id"] == "MP00130"][0]
+    # factor 1: 2 packs entregados por HAVI -> 2 en Odoo
+    assert serv["product_uom_qty"] == 2.0
+    assert serv["product_uom_id"] == "Pack 4800"
 
 
 # ---------------------------------------------------------------------------
@@ -187,10 +196,10 @@ def test_columnas_exactas_del_export(resultado):
 
 def test_one2many_cabecera_solo_en_primera_linea(resultado):
     df = resultado.df_import
-    # 4 (5001) + 1 (5002) + 3 (nota 9100) + 2 (suelto) + 2 (5005) = 12 filas
-    assert len(df) == 12
+    # 4 (5001) + 2 (5002) + 3 (nota 9100) + 2 (suelto) + 2 (5005) = 13 filas
+    assert len(df) == 13
     con_cabecera = df.index[df["partner_id"] != ""].tolist()
-    assert con_cabecera == [0, 4, 5, 8, 10]  # primera línea de cada pedido
+    assert con_cabecera == [0, 4, 6, 9, 11]  # primera línea de cada pedido
     cab = ["partner_id", "client_order_ref", "origin", "date_order"]
     for i in df.index:
         if i in con_cabecera:

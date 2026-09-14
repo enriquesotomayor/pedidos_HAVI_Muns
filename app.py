@@ -166,7 +166,8 @@ st.divider()
 # ---------------------------------------------------------------------------
 # Carga del fichero de ventas
 # ---------------------------------------------------------------------------
-archivo = st.file_uploader("📤 Excel de ventas de HAVI", type=["xlsx", "xls"])
+archivo = st.file_uploader("📤 Excel de ventas de HAVI",
+                           type=["xlsx", "xls", "xlsm"])
 
 if archivo is None:
     st.info("Sube el fichero de ventas para empezar.")

@@ -6,7 +6,7 @@ import io
 import pandas as pd
 import pytest
 
-from fixture_havi import xlsx_havi_sintetico
+from fixture_havi import xlsm_havi_sintetico, xlsx_havi_sintetico
 from havi2odoo import (DEFAULT_DEBTOR_MAP, DEFAULT_PRODUCT_MAP,
                        DEFAULT_TRANSPORT_MAP, config_xlsx_a_mapeos,
                        exportar_xlsx, leer_havi, mapeos_a_config_xlsx,
@@ -41,6 +41,14 @@ def test_fila_totales_ignorada():
     # 13 filas en la fixture, la de totales (sin fecha ni artículo) se elimina
     assert len(df) == 12
     assert not (df["Cantidad Entregada"] == 999).any()
+
+
+def test_leer_havi_acepta_xlsm():
+    # HAVI envía el fichero como .xlsm (libro con macros, hoja Export):
+    # debe leerse igual que un .xlsx, sin convertirlo antes
+    df_xlsx = leer_havi(xlsx_havi_sintetico())
+    df_xlsm = leer_havi(xlsm_havi_sintetico())
+    pd.testing.assert_frame_equal(df_xlsm, df_xlsx)
 
 
 # ---------------------------------------------------------------------------

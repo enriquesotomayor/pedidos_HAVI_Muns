@@ -25,6 +25,7 @@ casos, añadirlos al final y ajustar los conteos en test_havi2odoo.py):
 - Fila de totales al final (sin fecha ni artículo) -> se ignora.
 """
 import io
+import zipfile
 
 import pandas as pd
 
@@ -85,5 +86,28 @@ def xlsx_havi_sintetico() -> io.BytesIO:
     igual que un fichero real (incluida la cabecera 'Nº Pedido ' con espacio)."""
     buf = io.BytesIO()
     df_havi_sintetico().to_excel(buf, index=False, engine="openpyxl")
+    buf.seek(0)
+    return buf
+
+
+def xlsm_havi_sintetico() -> io.BytesIO:
+    """El mismo DataFrame como libro .xlsm en memoria, imitando el fichero
+    real de HAVI (libro con macros, hoja 'Export'). El zip es el mismo
+    formato que un .xlsx salvo el content-type del workbook, que aquí se
+    reescribe al de macroEnabled para que la fixture sea fiel al original."""
+    base = io.BytesIO()
+    df_havi_sintetico().to_excel(base, index=False, engine="openpyxl",
+                                 sheet_name="Export")
+    base.seek(0)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(base) as zin, zipfile.ZipFile(buf, "w") as zout:
+        for item in zin.infolist():
+            datos = zin.read(item.filename)
+            if item.filename == "[Content_Types].xml":
+                datos = datos.replace(
+                    b"application/vnd.openxmlformats-officedocument."
+                    b"spreadsheetml.sheet.main+xml",
+                    b"application/vnd.ms-excel.sheet.macroEnabled.main+xml")
+            zout.writestr(item, datos)
     buf.seek(0)
     return buf

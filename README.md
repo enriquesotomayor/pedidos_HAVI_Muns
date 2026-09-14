@@ -5,6 +5,10 @@ descarga un Excel importable en Odoo que crea los **pedidos de venta**
 (`sale.order`). La facturación se hace después en Odoo desde los pedidos,
 para que precios y descuentos salgan de las tarifas de cada cliente.
 
+El fichero de entrada es el **`.xlsm` que envía HAVI** (libro con macros,
+hoja `Export`, cabeceras en la fila 1): se sube tal cual, sin convertirlo —
+las macros se ignoran al leerlo. También se admiten `.xlsx` y `.xls`.
+
 ## Reglas de transformación
 
 | Excel HAVI | Odoo (sale.order) |

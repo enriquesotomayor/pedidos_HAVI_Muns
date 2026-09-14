@@ -13,7 +13,7 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
 | Nota de Entrega − Cliente − Nº Pedido | Referencia de cliente (`client_order_ref`) → pasa a Referencia de la factura, con el nº de pedido HAVI incluido (los `SIN Nº PEDIDO` van sin sufijo) |
 | Nº Pedido | Documento origen (`origin`) |
 | Debtor | Cliente (`partner_id`, vía mapeo, verificado contra producción) |
-| Desc Artículo | Producto de línea (vía mapeo, por referencia interna) |
+| Desc Artículo | Producto de línea (vía mapeo, por referencia interna; las empanadas llevan la referencia de su variante de Mercado, MULTI por defecto) |
 | Cantidad Entregada × factor | Cantidad de línea (factor por producto en el mapeo, default 1; empanadas: 40 unidades por caja HAVI; Salsa Chimichurri: 3 bolsas de 2 kg por caja) |
 | (tabla Embalaje) | UdM de línea (`Unidades`, `Pack 100`, `Bolsa 2kg`…) |
 | Σ Kg Entregados del pedido | Línea de servicio de transporte (qty en kg; precio/kg lo pone Odoo) |
@@ -26,6 +26,9 @@ para que precios y descuentos salgan de las tarifas de cada cliente.
   Amigos de Muns SL se factura como un cliente normal.
 - Transporte por cliente según mapeo (tabla Transporte_HAVI); `NO APLICA`
   = sin línea. El servicio debe existir en Odoo con UdM kg y precio/kg.
+- La referencia de cada empanada es la de su **variante de Mercado**
+  (`PA000nnMU` = MULTI, el valor por defecto del selector de la barra
+  lateral; también `ES`, `EN`, `DE`). Todo lo vendido hasta ahora es MULTI.
 - Precio, descuento y plazo de pago (30 días) los aplica Odoo: tarifa y
   ficha del cliente.
 
@@ -84,9 +87,14 @@ Crear factura. Requisitos:
 
 - Clientes: nombres verificados contra producción el 18/08/2026.
 - Productos: la celda "Producto Odoo" debe identificar unívocamente el
-  producto. Las empanadas con variantes de Mercado dan "varias
-  coincidencias" si se usa el nombre de plantilla → usar la referencia de
-  variante (p. ej. `PA00001-ESP`) cuando estén cargadas.
+  producto. Desde el 11/09/2026 las empanadas tienen variantes de Mercado
+  y la referencia base (`PA00001`) ya no existe: da "varias coincidencias"
+  al importar. La app usa la referencia de variante (`PA00001MU`,
+  `PA00001ES`, `PA00001EN`, `PA00001DE`); el mercado se elige en el
+  selector de la barra lateral (MULTI por defecto: es lo vendido hasta
+  ahora y lo que va a franquiciados vía HAVI). Las configs xlsx antiguas
+  con referencias sin sufijo se normalizan automáticamente a MULTI al
+  cargarlas, con un aviso por cada referencia actualizada.
 - UdM `Unidades`, `Pack 100`, `Pack 200`, `Pack 1000`, `Caja de 27` y
   `Bolsa 2kg` en Unidades y embalajes.
 - Servicios de transporte (`Transporte Península`, `Transporte Barcelona`,

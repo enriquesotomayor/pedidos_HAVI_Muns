@@ -36,6 +36,45 @@ DEBTORS_EXCLUIDOS = {"PLACERES MUNS SL"}
 NO_APLICA = "NO APLICA"
 
 # ---------------------------------------------------------------------------
+# Variantes de Mercado (desde el 11/09/2026 en producción)
+# ---------------------------------------------------------------------------
+# Las empanadas tienen variantes por atributo "Mercado": la referencia base
+# (p. ej. PA00001) ya no existe como referencia exacta; las variantes son
+# PA00001MU / PA00001ES / PA00001EN / PA00001DE. Todo lo vendido hasta ahora
+# es MULTI, y las ventas a franquiciados vía HAVI siguen siendo MULTI.
+
+MERCADOS = ("MU", "ES", "EN", "DE")
+MERCADO_DEFAULT = "MU"
+
+# Referencias base (plantillas) que tienen variantes de Mercado en producción.
+# Incluye halal (PA00044–PA00055) y minis (PA00057–PA00071), que hoy no van
+# por HAVI pero siguen la misma regla si algún día se mueven.
+PRODUCTOS_CON_VARIANTES: frozenset[str] = frozenset(
+    f"PA{n:05d}" for n in (
+        *range(1, 7), *range(8, 13), 15, 16, 24, 25, 30, 34, 35, 39, 40, 41,
+        42, *range(44, 56), *range(57, 62), *range(63, 69), 70, 71,
+    )
+)
+
+_RE_REF_EMPANADA = re.compile(r"^(PA\d{5})(MU|ES|EN|DE)?$")
+
+
+def normalizar_ref_producto(ref: str, mercado: str = MERCADO_DEFAULT) -> str:
+    """Convierte una referencia base con variantes de Mercado en la referencia
+    de la variante pedida (PA00001 -> PA00001MU). Si la referencia ya lleva
+    sufijo de mercado, se respeta salvo que se pida explícitamente un mercado
+    distinto del por defecto. Cualquier otra referencia queda intacta."""
+    m = _RE_REF_EMPANADA.match(str(ref).strip())
+    if not m:
+        return ref
+    base, sufijo = m.group(1), m.group(2)
+    if sufijo:
+        return ref if mercado == MERCADO_DEFAULT else base + mercado
+    if base in PRODUCTOS_CON_VARIANTES:
+        return base + mercado
+    return ref
+
+# ---------------------------------------------------------------------------
 # Mapeos por defecto (editables en la UI / sobreescribibles por config xlsx)
 # ---------------------------------------------------------------------------
 
@@ -46,26 +85,28 @@ NO_APLICA = "NO APLICA"
 # Factor: cantidad Odoo = Cantidad Entregada HAVI × factor. Empanadas en
 # unidades sueltas (1 caja HAVI = 40 Unidades); salsa en bolsas (1 caja
 # HAVI = 3 bolsas de 2 kg).
+# Las empanadas van por la referencia de su variante MULTI (sufijo MU); el
+# mercado se puede cambiar en la UI y se aplica con normalizar_ref_producto.
 DEFAULT_PRODUCT_MAP: dict[str, tuple[str, str, int | float]] = {
-    "EMPANADA ATÚN": ("PA00025", "Unidades", 40),
-    "EMPANADA CEBOLLA CARAMELIZADA": ("PA00003", "Unidades", 40),
-    "EMPANADA CHEESEBURGUER": ("PA00030", "Unidades", 40),
-    "EMPANADA CHOCO PLÁTANO": ("PA00016", "Unidades", 40),
-    "EMPANADA ESPINACA Y EMMENTAL": ("PA00004", "Unidades", 40),
-    "EMPANADA JAMÓN Y QUESO": ("PA00001", "Unidades", 40),
-    "EMPANADA MANZANA Y CANELA": ("PA00012", "Unidades", 40),
-    "EMPANADA MOZZARELLA Y OLIVADA": ("PA00005", "Unidades", 40),
-    "EMPANADA POLLO AL CURRY": ("PA00008", "Unidades", 40),
-    "EMPANADA POLLO ASADO": ("PA00034", "Unidades", 40),
-    "EMPANADA POLLO THAI": ("PA00010", "Unidades", 40),
-    "EMPANADA PROVOLONE Y TOMATE": ("PA00006", "Unidades", 40),
-    "EMPANADA PULLED PORK XXL": ("PA00042", "Unidades", 40),
-    "EMPANADA SETAS Y CAMEMBERT": ("PA00015", "Unidades", 40),
-    "EMPANADA TERNERA PICANTE": ("PA00011", "Unidades", 40),
-    "EMPANADA TERNERA ROYALE": ("PA00035", "Unidades", 40),
-    "EMPANADA TERNERA SUAVE": ("PA00009", "Unidades", 40),
-    "EMPANADA TOMATE Y ALBAHACA": ("PA00002", "Unidades", 40),
-    "EMPANADA TÜNA": ("PA00039", "Unidades", 40),
+    "EMPANADA ATÚN": ("PA00025MU", "Unidades", 40),
+    "EMPANADA CEBOLLA CARAMELIZADA": ("PA00003MU", "Unidades", 40),
+    "EMPANADA CHEESEBURGUER": ("PA00030MU", "Unidades", 40),
+    "EMPANADA CHOCO PLÁTANO": ("PA00016MU", "Unidades", 40),
+    "EMPANADA ESPINACA Y EMMENTAL": ("PA00004MU", "Unidades", 40),
+    "EMPANADA JAMÓN Y QUESO": ("PA00001MU", "Unidades", 40),
+    "EMPANADA MANZANA Y CANELA": ("PA00012MU", "Unidades", 40),
+    "EMPANADA MOZZARELLA Y OLIVADA": ("PA00005MU", "Unidades", 40),
+    "EMPANADA POLLO AL CURRY": ("PA00008MU", "Unidades", 40),
+    "EMPANADA POLLO ASADO": ("PA00034MU", "Unidades", 40),
+    "EMPANADA POLLO THAI": ("PA00010MU", "Unidades", 40),
+    "EMPANADA PROVOLONE Y TOMATE": ("PA00006MU", "Unidades", 40),
+    "EMPANADA PULLED PORK XXL": ("PA00042MU", "Unidades", 40),
+    "EMPANADA SETAS Y CAMEMBERT": ("PA00015MU", "Unidades", 40),
+    "EMPANADA TERNERA PICANTE": ("PA00011MU", "Unidades", 40),
+    "EMPANADA TERNERA ROYALE": ("PA00035MU", "Unidades", 40),
+    "EMPANADA TERNERA SUAVE": ("PA00009MU", "Unidades", 40),
+    "EMPANADA TOMATE Y ALBAHACA": ("PA00002MU", "Unidades", 40),
+    "EMPANADA TÜNA": ("PA00039MU", "Unidades", 40),
     "SALSA CHIMICHURRI": ("PA00043", "Bolsa 2kg", 3),
     "ALFAJOR": ("ME00043", "Caja de 27", 1),
     "CAJA 4 MUNS": ("MP00122", "Pack 100", 1),
@@ -208,8 +249,10 @@ def procesar(df: pd.DataFrame,
              product_map: dict[str, tuple[str, str]],
              debtor_map: dict[str, str],
              transport_map: dict[str, str],
-             debtors_incluidos: list[str] | None = None) -> Resultado:
-    """Transforma el dataframe HAVI en pedidos de venta agrupados por Nº Pedido."""
+             debtors_incluidos: list[str] | None = None,
+             mercado: str = MERCADO_DEFAULT) -> Resultado:
+    """Transforma el dataframe HAVI en pedidos de venta agrupados por Nº Pedido.
+    `mercado` elige la variante de Mercado de las empanadas (MU por defecto)."""
     inc = Incidencias()
 
     # Lookups normalizados (tolerantes a puntuación/mayúsculas)
@@ -302,7 +345,7 @@ def procesar(df: pd.DataFrame,
             # (p. ej. salsa: 1 caja HAVI = 3 × Bolsa 2kg)
             cantidad = round(float(ln[COL_QTY]) * factor, 2)
             pedido["lineas"].append({
-                "product_id": nombre_odoo,
+                "product_id": normalizar_ref_producto(nombre_odoo, mercado),
                 "product_uom_qty": cantidad,
                 "product_uom_id": udm,
                 "desc_havi": desc,
@@ -366,8 +409,11 @@ def mapeos_a_config_xlsx(product_map: dict, debtor_map: dict,
                          transport_map: dict) -> bytes:
     """Exporta los mapeos actuales a un xlsx de configuración reutilizable."""
     buf = io.BytesIO()
+    # Referencias ya normalizadas (con sufijo de mercado): la próxima carga
+    # de esta config no vuelve a avisar.
     dfp = pd.DataFrame(
-        [(k, v[0], v[1], v[2]) for k, v in product_map.items()],
+        [(k, normalizar_ref_producto(v[0]), v[1], v[2])
+         for k, v in product_map.items()],
         columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo", "Factor"])
     dfd = pd.DataFrame(list(debtor_map.items()),
                        columns=["Debtor HAVI", "Cliente Odoo"])
@@ -380,21 +426,33 @@ def mapeos_a_config_xlsx(product_map: dict, debtor_map: dict,
     return buf.getvalue()
 
 
-def config_xlsx_a_mapeos(archivo) -> tuple[dict, dict, dict]:
+def config_xlsx_a_mapeos(archivo) -> tuple[dict, dict, dict, list[str]]:
     """Lee un xlsx de configuración (hojas Productos, Clientes y,
     opcionalmente, Transporte). Compatible con Embalaje_HAVI_odoo.xlsx.
     La columna Factor de Productos es opcional (configs antiguas de
-    3 columnas): si falta, o la celda está vacía/no numérica, factor = 1."""
+    3 columnas): si falta, o la celda está vacía/no numérica, factor = 1.
+    Las referencias base de empanadas (configs anteriores al 11/09/2026)
+    se normalizan a su variante MULTI; devuelve los avisos de cada cambio
+    para que la UI los muestre."""
     xl = pd.ExcelFile(archivo)
     dfp = xl.parse("Productos").fillna("")
     dfd = xl.parse("Clientes").fillna("")
     con_factor = "Factor" in dfp.columns
-    product_map = {
-        str(r["Desc Artículo HAVI"]).strip().upper():
-            (str(r["Producto Odoo"]).strip(), str(r["UdM Odoo"]).strip(),
-             parse_factor(r["Factor"]) if con_factor else 1)
-        for _, r in dfp.iterrows() if str(r["Desc Artículo HAVI"]).strip()
-    }
+    avisos: list[str] = []
+    product_map = {}
+    for _, r in dfp.iterrows():
+        desc = str(r["Desc Artículo HAVI"]).strip()
+        if not desc:
+            continue
+        ref = str(r["Producto Odoo"]).strip()
+        ref_norm = normalizar_ref_producto(ref)
+        if ref_norm != ref:
+            avisos.append(
+                f"Referencia {ref} actualizada a {ref_norm}: las empanadas "
+                "tienen variantes de Mercado desde el 11/09/2026")
+        product_map[desc.upper()] = (
+            ref_norm, str(r["UdM Odoo"]).strip(),
+            parse_factor(r["Factor"]) if con_factor else 1)
     debtor_map = {
         str(r["Debtor HAVI"]).strip(): str(r["Cliente Odoo"]).strip()
         for _, r in dfd.iterrows() if str(r["Debtor HAVI"]).strip()
@@ -411,4 +469,4 @@ def config_xlsx_a_mapeos(archivo) -> tuple[dict, dict, dict]:
             str(r[c_deb]).strip(): str(r[c_srv]).strip()
             for _, r in dft.iterrows() if str(r[c_deb]).strip()
         }
-    return product_map, debtor_map, transport_map
+    return product_map, debtor_map, transport_map, avisos

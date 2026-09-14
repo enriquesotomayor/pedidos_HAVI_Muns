@@ -54,16 +54,26 @@ Despliegue: Streamlit Community Cloud conectado a este repo; **cada push a
 ## Datos verificados contra producción lasmuns (18/08/2026)
 
 - `DEFAULT_PRODUCT_MAP` casa producto por REFERENCIA INTERNA
-  (`default_code`, p. ej. `PA00025` = Empanada Atún), no traducible:
-  inmune a las traducciones de nombre y al idioma del usuario que importa.
-  Las UdM sí van por nombre en español (p. ej. "Unidades", "Pack 200").
+  (`default_code`, p. ej. `PA00025MU` = Empanada Atún MULTI), no
+  traducible: inmune a las traducciones de nombre y al idioma del usuario
+  que importa. Las UdM sí van por nombre en español (p. ej. "Unidades",
+  "Pack 200").
 - Nombres de cliente de `DEFAULT_DEBTOR_MAP` verificados (p. ej. HAVI
   escribe "Grupo Cantalar S.L." y en Odoo es "GRUPO CANTALAR, S.L").
   El lookup normaliza puntos/comas/mayúsculas del lado HAVI.
-- Sin variantes de Mercado en producción: el matching por nombre de
-  plantilla es unívoco HOY. Si algún día se despliegan variantes
-  (ESP/ENG/DE/MULTI), cambiar la columna "Producto Odoo" de la config a
-  referencias de variante — no requiere tocar código.
+- Desde el 11/09/2026 las empanadas tienen variantes por atributo
+  "Mercado" (MU/ES/EN/DE, sufijo de dos letras sin guion): la referencia
+  base (`PA00001`) ya no existe y da "varias coincidencias" al importar.
+  El mapeo usa la variante MULTI (`PA00001MU`), que es todo lo vendido
+  hasta ahora y el default para franquiciados vía HAVI; el mercado se
+  elige en la UI y `normalizar_ref_producto` lo aplica (las 47 plantillas
+  con variantes están en `PRODUCTOS_CON_VARIANTES`). Las configs xlsx
+  antiguas sin sufijo se normalizan a MULTI al cargarlas, con aviso.
+- Pendiente valorar (fuera de alcance 14/09/2026): mapear por código de
+  artículo HAVI — Odoo tiene el campo `lasmuns_ref_havi` (`30700-0nn-000`)
+  en cada plantilla; requiere que el Excel de HAVI traiga el código.
+  Minis y halal no van por HAVI hoy; si empiezan, misma regla de sufijos
+  y las minis en cajas de 125 (factor 125, no 40).
 - Servicios de transporte esperados en Odoo: `Transporte Barcelona`,
   `Transporte Península`, `Transporte Portugal, Andorra e Islas`, tipo
   servicio, UdM kg, precio €/kg.

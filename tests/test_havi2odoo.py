@@ -10,7 +10,7 @@ from fixture_havi import xlsx_havi_sintetico
 from havi2odoo import (DEFAULT_DEBTOR_MAP, DEFAULT_PRODUCT_MAP,
                        DEFAULT_TRANSPORT_MAP, config_xlsx_a_mapeos,
                        exportar_xlsx, leer_havi, mapeos_a_config_xlsx,
-                       procesar)
+                       normalizar_ref_producto, procesar)
 
 COLUMNAS_EXPORT = [
     "partner_id", "client_order_ref", "origin", "date_order",
@@ -56,8 +56,8 @@ def test_bloques_no_contiguos_un_solo_pedido(resultado):
     # 5001 viene en dos bloques separados por 5002: debe salir UN pedido
     p = _pedido(resultado, "5001")
     productos = [ln["product_id"] for ln in p["lineas"]]
-    # referencias internas (Atún, Salsa Chimichurri, Alfajor) + transporte
-    assert productos == ["PA00025", "PA00043", "ME00043",
+    # referencias internas (Atún MULTI, Salsa Chimichurri, Alfajor) + transporte
+    assert productos == ["PA00025MU", "PA00043", "ME00043",
                          "Transporte Península"]
     assert p["partner_id"] == "GRUPO CANTALAR, S.L"
     # nota - cliente - nº pedido HAVI (el nº viaja así hasta la factura)
@@ -68,7 +68,7 @@ def test_bloques_no_contiguos_un_solo_pedido(resultado):
 
 def test_linea_qty_cero_descartada(resultado):
     p = _pedido(resultado, "5001")
-    assert "PA00034" not in [ln["product_id"] for ln in p["lineas"]]  # Pollo Asado
+    assert "PA00034MU" not in [ln["product_id"] for ln in p["lineas"]]  # Pollo Asado
     # informativo: la línea a 0 de 5001 y la de 5003
     assert len(resultado.incidencias.qty_cero) == 2
 
@@ -87,9 +87,9 @@ def test_sin_pedido_agrupado_por_nota(resultado):
     assert len(por_nota) == 1
     p = por_nota[0]
     assert p["partner_id"] == "MUNS VALLES, S.L."
-    # referencias internas (Atún, Ternera suave) + transporte
+    # referencias internas (Atún, Ternera suave, variantes MULTI) + transporte
     assert [ln["product_id"] for ln in p["lineas"]] == [
-        "PA00025", "PA00009", "Transporte Barcelona"]
+        "PA00025MU", "PA00009MU", "Transporte Barcelona"]
     assert p["revisar"] is True
 
 
@@ -112,7 +112,7 @@ def test_pedido_sin_nota_ref_cliente_y_numero(resultado):
     assert p["partner_id"] == "MUNS DLG, S.L"
     assert p["revisar"] is False
     assert [ln["product_id"] for ln in p["lineas"]] == [
-        "PA00039", "Transporte Barcelona"]  # Tüna + transporte (4.0 kg)
+        "PA00039MU", "Transporte Barcelona"]  # Tüna + transporte (4.0 kg)
 
 
 def test_placeres_muns_siempre_excluido(resultado):
@@ -147,10 +147,23 @@ def test_salsa_chimichurri_factor_bolsas(resultado):
 
 def test_empanadas_en_unidades_factor_40(resultado):
     p = _pedido(resultado, "5001")
-    atun = [ln for ln in p["lineas"] if ln["product_id"] == "PA00025"][0]
+    atun = [ln for ln in p["lineas"] if ln["product_id"] == "PA00025MU"][0]
     # 2 cajas HAVI × factor 40 = 80 unidades sueltas
     assert atun["product_uom_qty"] == 80.0
     assert atun["product_uom_id"] == "Unidades"
+
+
+def test_mercado_es_solo_cambia_empanadas():
+    # criterio de aceptación 2: el selector a ESP produce PA000nnES en todas
+    # las empanadas y nada más cambia
+    df = leer_havi(xlsx_havi_sintetico())
+    res = procesar(df, DEFAULT_PRODUCT_MAP, DEFAULT_DEBTOR_MAP,
+                   DEFAULT_TRANSPORT_MAP, mercado="ES")
+    p = _pedido(res, "5001")
+    assert [ln["product_id"] for ln in p["lineas"]] == [
+        "PA00025ES", "PA00043", "ME00043", "Transporte Península"]
+    p2 = _pedido(res, "5002")
+    assert [ln["product_id"] for ln in p2["lineas"]] == ["PA00001ES", "MP00130"]
 
 
 def test_factor_default_1_no_altera_cantidades(resultado):
@@ -174,7 +187,7 @@ def test_linea_transporte_suma_kg_y_udm_kg(resultado):
 def test_transporte_no_aplica_sin_linea(resultado):
     p = _pedido(resultado, "5002")  # AREAS, SAU -> NO APLICA
     # Jamón y queso + servilletas, sin línea de transporte
-    assert [ln["product_id"] for ln in p["lineas"]] == ["PA00001", "MP00130"]
+    assert [ln["product_id"] for ln in p["lineas"]] == ["PA00001MU", "MP00130"]
     assert not any("Transporte" in ln["product_id"] for ln in p["lineas"])
 
 
@@ -221,16 +234,47 @@ def test_exportar_xlsx_legible(resultado):
 
 
 # ---------------------------------------------------------------------------
+# normalizar_ref_producto: variantes de Mercado
+# ---------------------------------------------------------------------------
+
+def test_normalizar_base_con_variantes_mercado_default():
+    assert normalizar_ref_producto("PA00001") == "PA00001MU"
+    assert normalizar_ref_producto("PA00025") == "PA00025MU"
+
+
+def test_normalizar_base_con_variantes_mercado_explicito():
+    assert normalizar_ref_producto("PA00001", "ES") == "PA00001ES"
+
+
+def test_normalizar_con_sufijo_y_mercado_default_intacta():
+    # con el mercado por defecto se respeta el sufijo que ya trae
+    assert normalizar_ref_producto("PA00001ES") == "PA00001ES"
+    assert normalizar_ref_producto("PA00001MU") == "PA00001MU"
+
+
+def test_normalizar_con_sufijo_y_mercado_distinto_cambia():
+    assert normalizar_ref_producto("PA00001MU", "DE") == "PA00001DE"
+    assert normalizar_ref_producto("PA00001ES", "EN") == "PA00001EN"
+
+
+def test_normalizar_referencias_sin_variantes_intactas():
+    for ref in ("PA00043", "ME00043", "MP00122", "Transporte Barcelona"):
+        assert normalizar_ref_producto(ref) == ref
+        assert normalizar_ref_producto(ref, "ES") == ref
+
+
+# ---------------------------------------------------------------------------
 # Config xlsx: round-trip de mapeos
 # ---------------------------------------------------------------------------
 
 def test_roundtrip_config_xlsx():
     contenido = mapeos_a_config_xlsx(DEFAULT_PRODUCT_MAP, DEFAULT_DEBTOR_MAP,
                                      DEFAULT_TRANSPORT_MAP)
-    pmap, dmap, tmap = config_xlsx_a_mapeos(io.BytesIO(contenido))
+    pmap, dmap, tmap, avisos = config_xlsx_a_mapeos(io.BytesIO(contenido))
     assert pmap == DEFAULT_PRODUCT_MAP  # incluye el factor (salsa: 3)
     assert dmap == DEFAULT_DEBTOR_MAP
     assert tmap == DEFAULT_TRANSPORT_MAP
+    assert avisos == []  # los defaults ya llevan sufijo de mercado
 
 
 def test_config_xlsx_escribe_columna_factor():
@@ -241,6 +285,41 @@ def test_config_xlsx_escribe_columna_factor():
     salsa = dfp[dfp["Producto Odoo"] == "PA00043"]
     assert salsa["Factor"].tolist() == [3]
     assert salsa["UdM Odoo"].tolist() == ["Bolsa 2kg"]
+
+
+def test_config_xlsx_exporta_referencias_normalizadas():
+    # aunque el mapeo en sesión lleve referencias base, el export las escribe
+    # con sufijo: la próxima carga de esa config no vuelve a avisar
+    pmap_viejo = {"EMPANADA ATÚN": ("PA00025", "Unidades", 40),
+                  "SALSA CHIMICHURRI": ("PA00043", "Bolsa 2kg", 3)}
+    contenido = mapeos_a_config_xlsx(pmap_viejo, DEFAULT_DEBTOR_MAP,
+                                     DEFAULT_TRANSPORT_MAP)
+    dfp = pd.read_excel(io.BytesIO(contenido), sheet_name="Productos")
+    assert dfp["Producto Odoo"].tolist() == ["PA00025MU", "PA00043"]
+    _, _, _, avisos = config_xlsx_a_mapeos(io.BytesIO(contenido))
+    assert avisos == []
+
+
+def test_config_antigua_sin_sufijo_normaliza_y_avisa():
+    # criterio de aceptación 3: una config guardada antes de las variantes
+    # (referencias base) sigue cargando, normalizada y con aviso
+    productos = pd.DataFrame(
+        [("EMPANADA ATÚN", "PA00025", "Unidades", 40),
+         ("SALSA CHIMICHURRI", "PA00043", "Bolsa 2kg", 3)],
+        columns=["Desc Artículo HAVI", "Producto Odoo", "UdM Odoo", "Factor"])
+    clientes = pd.DataFrame(
+        [("AREAS, SAU", "AREAS, SAU")],
+        columns=["Debtor HAVI", "Cliente Odoo"])
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+        productos.to_excel(writer, index=False, sheet_name="Productos")
+        clientes.to_excel(writer, index=False, sheet_name="Clientes")
+    buf.seek(0)
+    pmap, _, _, avisos = config_xlsx_a_mapeos(buf)
+    assert pmap["EMPANADA ATÚN"][0] == "PA00025MU"
+    assert pmap["SALSA CHIMICHURRI"][0] == "PA00043"
+    assert len(avisos) == 1
+    assert "PA00025" in avisos[0] and "PA00025MU" in avisos[0]
 
 
 def test_config_antigua_3_columnas_factor_1():
@@ -257,9 +336,10 @@ def test_config_antigua_3_columnas_factor_1():
         productos.to_excel(writer, index=False, sheet_name="Productos")
         clientes.to_excel(writer, index=False, sheet_name="Clientes")
     buf.seek(0)
-    pmap, _, _ = config_xlsx_a_mapeos(buf)
-    assert pmap == {"EMPANADA ATÚN": ("PA00025", "Caja 40 Uds", 1),
+    pmap, _, _, avisos = config_xlsx_a_mapeos(buf)
+    assert pmap == {"EMPANADA ATÚN": ("PA00025MU", "Caja 40 Uds", 1),
                     "SALSA CHIMICHURRI": ("PA00043", "Bolsa 2kg", 1)}
+    assert len(avisos) == 1  # solo la empanada se normaliza
 
 
 def test_config_factor_vacio_o_no_numerico_es_1():
@@ -276,7 +356,7 @@ def test_config_factor_vacio_o_no_numerico_es_1():
         productos.to_excel(writer, index=False, sheet_name="Productos")
         clientes.to_excel(writer, index=False, sheet_name="Clientes")
     buf.seek(0)
-    pmap, _, _ = config_xlsx_a_mapeos(buf)
+    pmap, _, _, _ = config_xlsx_a_mapeos(buf)
     assert pmap["EMPANADA ATÚN"][2] == 1     # celda vacía
     assert pmap["SALSA CHIMICHURRI"][2] == 1  # no numérico
     assert pmap["ALFAJOR"][2] == 2            # numérico se respeta
@@ -294,7 +374,7 @@ def test_config_sin_hoja_transporte_usa_defaults():
         productos.to_excel(writer, index=False, sheet_name="Productos")
         clientes.to_excel(writer, index=False, sheet_name="Clientes")
     buf.seek(0)
-    pmap, dmap, tmap = config_xlsx_a_mapeos(buf)
-    assert pmap == {"EMPANADA ATÚN": ("PA00025", "Caja 40 Uds", 1)}
+    pmap, dmap, tmap, _ = config_xlsx_a_mapeos(buf)
+    assert pmap == {"EMPANADA ATÚN": ("PA00025MU", "Caja 40 Uds", 1)}
     assert dmap == {"AREAS, SAU": "AREAS, SAU"}
     assert tmap == DEFAULT_TRANSPORT_MAP  # sin hoja Transporte -> embebidos

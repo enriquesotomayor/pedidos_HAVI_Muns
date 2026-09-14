@@ -38,8 +38,20 @@ if "transport_map" not in st.session_state:
 # ---------------------------------------------------------------------------
 # Barra lateral: configuración
 # ---------------------------------------------------------------------------
+MERCADO_OPCIONES = {
+    "MULTI (MU)": "MU",
+    "ESP (ES)": "ES",
+    "ENG (EN)": "EN",
+    "DE (DE)": "DE",
+}
+
 with st.sidebar:
     st.header("⚙️ Configuración")
+    mercado = MERCADO_OPCIONES[st.selectbox(
+        "Mercado de las empanadas", options=list(MERCADO_OPCIONES),
+        index=0,
+        help="Variante que recibirán los pedidos. Por defecto MULTI: es la "
+             "referencia de todo lo vendido hasta ahora.")]
     st.markdown(
         "**Reglas fijas**\n"
         "- Fecha del pedido = *Fecha Entrega*\n"
@@ -66,12 +78,14 @@ with st.sidebar:
                               key="cfg")
     if cfg_up is not None:
         try:
-            pm, dm, tm = h2o.config_xlsx_a_mapeos(cfg_up)
+            pm, dm, tm, avisos = h2o.config_xlsx_a_mapeos(cfg_up)
             st.session_state.product_map = pm
             st.session_state.debtor_map = dm
             st.session_state.transport_map = tm
             st.success(f"Config cargada: {len(pm)} productos, {len(dm)} "
                        f"clientes, {len(tm)} transportes.")
+            for aviso in avisos:
+                st.warning(aviso)
         except Exception as e:
             st.error(f"No se pudo leer la configuración: {e}")
 
@@ -107,11 +121,12 @@ with st.expander("🗺️ Mapeo de productos (HAVI → Odoo + UdM + factor)"):
     st.caption(
         "El **Producto Odoo** lleva la referencia interna del producto "
         "(`default_code`, no traducible: inmune al idioma del usuario que "
-        "importa); también admite el nombre exacto en español. Si algún día "
-        "se despliegan variantes de Mercado, usar la referencia de la "
-        "variante (p. ej. `PA00001-ESP`). El **Factor** multiplica la "
-        "Cantidad Entregada de HAVI (vacío = 1; p. ej. Salsa Chimichurri: "
-        "3 bolsas de 2 kg por caja HAVI)."
+        "importa); también admite el nombre exacto en español. Las empanadas "
+        "llevan la referencia de su variante de Mercado (`PA00001MU`, "
+        "`PA00001ES`, `PA00001EN`, `PA00001DE`); el selector de la barra "
+        "lateral aplica el mercado elegido al generar los pedidos. El "
+        "**Factor** multiplica la Cantidad Entregada de HAVI (vacío = 1; "
+        "p. ej. Salsa Chimichurri: 3 bolsas de 2 kg por caja HAVI)."
     )
 
 with st.expander("👥 Mapeo de clientes (Debtor HAVI → Cliente Odoo)"):
@@ -176,7 +191,8 @@ sel_debtors = st.multiselect(
 resultado = h2o.procesar(df, st.session_state.product_map,
                          st.session_state.debtor_map,
                          st.session_state.transport_map,
-                         debtors_incluidos=sel_debtors)
+                         debtors_incluidos=sel_debtors,
+                         mercado=mercado)
 inc = resultado.incidencias
 
 # ---------------------------------------------------------------------------
